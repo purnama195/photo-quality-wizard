@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { format } from "date-fns";
-import { ArrowLeft, CheckCircle, XCircle } from "lucide-react";
+import { ArrowLeft, CheckCircle, XCircle, AlertCircle } from "lucide-react";
 import { Progress } from "@/components/ui/progress";
 
 const PhotoDetail = () => {
@@ -50,6 +50,32 @@ const PhotoDetail = () => {
 
   const formattedDate = format(new Date(photo.uploadDate), "dd MMMM yyyy, HH:mm");
   const scorePercentage = Math.round(photo.score * 100);
+  const certaintyPercentage = Math.round(photo.certaintyFactor * 100);
+
+  const getCertaintyBadge = () => {
+    if (photo.certaintyFactor >= 0.9) {
+      return (
+        <Badge className="bg-emerald-500 hover:bg-emerald-600">
+          <CheckCircle className="h-3 w-3 mr-1" />
+          Kepastian Tinggi
+        </Badge>
+      );
+    } else if (photo.certaintyFactor >= 0.7) {
+      return (
+        <Badge className="bg-amber-500 hover:bg-amber-600">
+          <CheckCircle className="h-3 w-3 mr-1" />
+          Kepastian Sedang
+        </Badge>
+      );
+    } else {
+      return (
+        <Badge variant="outline">
+          <AlertCircle className="h-3 w-3 mr-1" />
+          Kepastian Rendah
+        </Badge>
+      );
+    }
+  };
 
   return (
     <div className="container mx-auto px-4 py-8">
@@ -81,8 +107,8 @@ const PhotoDetail = () => {
 
           <div>
             <h2 className="text-xl font-semibold mb-2">Hasil Analisis</h2>
-            <div className="flex items-center mb-4">
-              <div className="mr-3">
+            <div className="flex flex-wrap items-center gap-3 mb-4">
+              <div>
                 {photo.quality === "good" ? (
                   <Badge className="bg-photo-good hover:bg-photo-good/80 text-white">
                     <CheckCircle className="h-3 w-3 mr-1" />
@@ -96,7 +122,17 @@ const PhotoDetail = () => {
                 )}
               </div>
               <div>
-                <span className="font-medium">Score: {scorePercentage}%</span>
+                {getCertaintyBadge()}
+              </div>
+            </div>
+            <div className="flex flex-col sm:flex-row sm:items-center gap-4 mb-6">
+              <div className="bg-background rounded-lg p-3 flex-1">
+                <span className="text-sm text-muted-foreground">SVM Score</span>
+                <div className="font-medium text-lg">{scorePercentage}%</div>
+              </div>
+              <div className="bg-background rounded-lg p-3 flex-1">
+                <span className="text-sm text-muted-foreground">Certainty Factor</span>
+                <div className="font-medium text-lg">{certaintyPercentage}%</div>
               </div>
             </div>
           </div>
@@ -104,11 +140,16 @@ const PhotoDetail = () => {
           <Card>
             <CardContent className="pt-6">
               <h3 className="font-medium mb-4">Detail Parameter</h3>
-              <div className="space-y-4">
+              <div className="space-y-5">
                 <div>
                   <div className="flex justify-between mb-1">
                     <span className="text-sm">Brightness</span>
-                    <span className="text-sm font-medium">{Math.round(photo.features.brightness * 100)}%</span>
+                    <div className="flex items-center gap-2">
+                      <span className="text-sm font-medium">{Math.round(photo.features.brightness * 100)}%</span>
+                      <Badge variant="outline" className="text-xs">
+                        CF: {Math.round(photo.featuresCF.brightnessCF * 100)}%
+                      </Badge>
+                    </div>
                   </div>
                   <Progress value={photo.features.brightness * 100} />
                 </div>
@@ -116,7 +157,12 @@ const PhotoDetail = () => {
                 <div>
                   <div className="flex justify-between mb-1">
                     <span className="text-sm">Contrast</span>
-                    <span className="text-sm font-medium">{Math.round(photo.features.contrast * 100)}%</span>
+                    <div className="flex items-center gap-2">
+                      <span className="text-sm font-medium">{Math.round(photo.features.contrast * 100)}%</span>
+                      <Badge variant="outline" className="text-xs">
+                        CF: {Math.round(photo.featuresCF.contrastCF * 100)}%
+                      </Badge>
+                    </div>
                   </div>
                   <Progress value={photo.features.contrast * 100} />
                 </div>
@@ -124,7 +170,12 @@ const PhotoDetail = () => {
                 <div>
                   <div className="flex justify-between mb-1">
                     <span className="text-sm">Sharpness</span>
-                    <span className="text-sm font-medium">{Math.round(photo.features.sharpness * 100)}%</span>
+                    <div className="flex items-center gap-2">
+                      <span className="text-sm font-medium">{Math.round(photo.features.sharpness * 100)}%</span>
+                      <Badge variant="outline" className="text-xs">
+                        CF: {Math.round(photo.featuresCF.sharpnessCF * 100)}%
+                      </Badge>
+                    </div>
                   </div>
                   <Progress value={photo.features.sharpness * 100} />
                 </div>
@@ -132,7 +183,12 @@ const PhotoDetail = () => {
                 <div>
                   <div className="flex justify-between mb-1">
                     <span className="text-sm">Noise (Lower is better)</span>
-                    <span className="text-sm font-medium">{Math.round(photo.features.noise * 100)}%</span>
+                    <div className="flex items-center gap-2">
+                      <span className="text-sm font-medium">{Math.round(photo.features.noise * 100)}%</span>
+                      <Badge variant="outline" className="text-xs">
+                        CF: {Math.round(photo.featuresCF.noiseCF * 100)}%
+                      </Badge>
+                    </div>
                   </div>
                   <Progress 
                     value={photo.features.noise * 100} 
@@ -143,7 +199,12 @@ const PhotoDetail = () => {
                 <div>
                   <div className="flex justify-between mb-1">
                     <span className="text-sm">Color Balance</span>
-                    <span className="text-sm font-medium">{Math.round(photo.features.colorBalance * 100)}%</span>
+                    <div className="flex items-center gap-2">
+                      <span className="text-sm font-medium">{Math.round(photo.features.colorBalance * 100)}%</span>
+                      <Badge variant="outline" className="text-xs">
+                        CF: {Math.round(photo.featuresCF.colorBalanceCF * 100)}%
+                      </Badge>
+                    </div>
                   </div>
                   <Progress value={photo.features.colorBalance * 100} />
                 </div>

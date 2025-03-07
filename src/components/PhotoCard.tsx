@@ -1,9 +1,9 @@
 
-import { Card, CardContent, CardFooter } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Photo } from "@/services/photoService";
 import { format } from "date-fns";
-import { BarChart, CheckCircle, XCircle } from "lucide-react";
+import { BarChart, CheckCircle, XCircle, AlertCircle } from "lucide-react";
 import { Link } from "react-router-dom";
 
 interface PhotoCardProps {
@@ -31,6 +31,31 @@ const PhotoCard = ({ photo }: PhotoCardProps) => {
     }
   };
 
+  const getCertaintyBadge = () => {
+    if (photo.certaintyFactor >= 0.9) {
+      return (
+        <span className="text-xs text-emerald-600 font-medium flex items-center">
+          <CheckCircle className="h-3 w-3 mr-1" />
+          CF: {Math.round(photo.certaintyFactor * 100)}%
+        </span>
+      );
+    } else if (photo.certaintyFactor >= 0.7) {
+      return (
+        <span className="text-xs text-amber-600 font-medium flex items-center">
+          <CheckCircle className="h-3 w-3 mr-1" />
+          CF: {Math.round(photo.certaintyFactor * 100)}%
+        </span>
+      );
+    } else {
+      return (
+        <span className="text-xs text-gray-600 font-medium flex items-center">
+          <AlertCircle className="h-3 w-3 mr-1" />
+          CF: {Math.round(photo.certaintyFactor * 100)}%
+        </span>
+      );
+    }
+  };
+
   const getScoreText = () => {
     const percentage = Math.round(photo.score * 100);
     return `${percentage}%`;
@@ -47,7 +72,10 @@ const PhotoCard = ({ photo }: PhotoCardProps) => {
           </div>
           <p className="text-sm text-muted-foreground">{formattedDate}</p>
           <div className="mt-2 flex items-center justify-between">
-            <span className="text-sm">Score: {getScoreText()}</span>
+            <div className="flex flex-col">
+              <span className="text-sm">Score: {getScoreText()}</span>
+              {getCertaintyBadge()}
+            </div>
             <Link 
               to={`/photos/${photo.id}`} 
               className="flex items-center text-sm text-primary hover:underline"
