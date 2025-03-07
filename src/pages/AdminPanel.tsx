@@ -2,7 +2,7 @@
 import PhotoGrid from "@/components/PhotoGrid";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { getAllPhotos } from "@/services/photoService";
-import { Users, ImageCheck, ImageX, BarChart } from "lucide-react";
+import { Users, Image, BadgeCheck, X, BarChart } from "lucide-react";
 
 const AdminPanel = () => {
   const allPhotos = getAllPhotos();
@@ -56,7 +56,7 @@ const AdminPanel = () => {
           </CardHeader>
           <CardContent>
             <div className="flex items-center">
-              <ImageCheck className="h-5 w-5 text-photo-good mr-2" />
+              <BadgeCheck className="h-5 w-5 text-photo-good mr-2" />
               <span className="text-2xl font-bold">{goodQualityPhotos}</span>
               <span className="ml-2 text-sm text-muted-foreground">
                 ({goodPercentage}%)
@@ -73,7 +73,7 @@ const AdminPanel = () => {
           </CardHeader>
           <CardContent>
             <div className="flex items-center">
-              <ImageX className="h-5 w-5 text-photo-bad mr-2" />
+              <X className="h-5 w-5 text-photo-bad mr-2" />
               <span className="text-2xl font-bold">{badQualityPhotos}</span>
               <span className="ml-2 text-sm text-muted-foreground">
                 ({100 - goodPercentage}%)
