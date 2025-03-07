@@ -16,6 +16,7 @@ interface AuthContextType {
   user: User | null;
   isLoading: boolean;
   login: (email: string, password: string) => Promise<void>;
+  register: (name: string, email: string, password: string) => Promise<void>;
   logout: () => void;
   isAuthenticated: boolean;
   isAdmin: boolean;
@@ -44,6 +45,7 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [users, setUsers] = useState(MOCK_USERS);
   const { toast } = useToast();
 
   useEffect(() => {
@@ -52,6 +54,16 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     if (savedUser) {
       setUser(JSON.parse(savedUser));
     }
+    
+    // Load users from localStorage if any
+    const savedUsers = localStorage.getItem("photoQualityUsers");
+    if (savedUsers) {
+      setUsers(JSON.parse(savedUsers));
+    } else {
+      // Initialize with mock users
+      localStorage.setItem("photoQualityUsers", JSON.stringify(MOCK_USERS));
+    }
+    
     setIsLoading(false);
   }, []);
 
@@ -61,7 +73,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     // Simulate API call delay
     await new Promise(resolve => setTimeout(resolve, 800));
     
-    const foundUser = MOCK_USERS.find(
+    const foundUser = users.find(
       (u) => u.email === email && u.password === password
     );
     
@@ -85,6 +97,52 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setIsLoading(false);
   };
 
+  const register = async (name: string, email: string, password: string) => {
+    setIsLoading(true);
+    
+    // Simulate API call delay
+    await new Promise(resolve => setTimeout(resolve, 800));
+    
+    // Check if email already exists
+    const emailExists = users.some(u => u.email === email);
+    
+    if (emailExists) {
+      toast({
+        title: "Registrasi gagal",
+        description: "Email sudah terdaftar",
+        variant: "destructive",
+      });
+      setIsLoading(false);
+      throw new Error("Email already exists");
+    }
+    
+    // Create new user
+    const newUser = {
+      id: Math.random().toString(36).substring(2, 9),
+      name,
+      email,
+      password,
+      role: "user" as UserRole,
+    };
+    
+    // Add to users list
+    const updatedUsers = [...users, newUser];
+    setUsers(updatedUsers);
+    localStorage.setItem("photoQualityUsers", JSON.stringify(updatedUsers));
+    
+    // Auto login
+    const { password: _, ...userWithoutPassword } = newUser;
+    setUser(userWithoutPassword);
+    localStorage.setItem("photoQualityUser", JSON.stringify(userWithoutPassword));
+    
+    toast({
+      title: "Registrasi berhasil",
+      description: `Selamat datang, ${name}`,
+    });
+    
+    setIsLoading(false);
+  };
+
   const logout = () => {
     setUser(null);
     localStorage.removeItem("photoQualityUser");
@@ -100,6 +158,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         user,
         isLoading,
         login,
+        register,
         logout,
         isAuthenticated: !!user,
         isAdmin: user?.role === "admin",
